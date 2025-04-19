@@ -24,7 +24,7 @@ from Utils.Tokenizer import TextProcess
 from Utils.DataComb import Data
 from Utils.DataProcess import collate_fn_padd
 
-from Utils.decoder import DecodeGreedy, CTCBeamDecoder
+from Utils.decoder_simple import DecodeGreedy, CTCBeamDecoder
 from Utils.scorer import cer, wer
 
 # =============================================================================

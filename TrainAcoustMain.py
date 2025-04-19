@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Sep  7 11:00:19 2021
@@ -33,17 +33,25 @@ print(device)
 # train_path = "/media/alexloubser/DataSSD/Masters/ComboV8/GenerateData/Train2022.json"
 # valid_path = "/media/alexloubser/DataSSD/Masters/ComboV8/GenerateData/Val2022.json"
 
-train_path = "/media/alexloubser/DataSSD/LibriSpeech/TrainComb.json"
-valid_path = "/media/alexloubser/DataSSD/LibriSpeech/DevOther.json"
+# train_path = "/media/alexloubser/DataSSD/LibriSpeech/TrainComb.json"
+# valid_path = "/media/alexloubser/DataSSD/LibriSpeech/DevOther.json"
 
-data_train_path = "/media/alexloubser/DataSSD/Masters/v8data/datatrain/"
-data_val_path = "/media/alexloubser/DataSSD/Masters/v8data/dataval/"
+# data_train_path = "/media/alexloubser/DataSSD/Masters/v8data/datatrain/"
+# data_val_path = "/media/alexloubser/DataSSD/Masters/v8data/dataval/"
+
+# 修改为本地路径
+train_path = "data/train.json"
+valid_path = "data/valid.json"
+
+data_train_path = "data/train/"
+data_val_path = "data/valid/"
 
 # =============================================================================
 # Previous Model To Continue From
 # =============================================================================
 #model
-read_mod = "/media/alexloubser/DataSSD/Masters/NewModLibri/models/modelMelN100.pth"
+# read_mod = "/media/alexloubser/DataSSD/Masters/NewModLibri/models/modelMelN100.pth"
+read_mod = "models/initial_model.pth"
 
 
 # =============================================================================

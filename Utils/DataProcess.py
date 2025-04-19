@@ -82,7 +82,7 @@ class Data(torch.utils.data.Dataset):
                 # raise Exception('spectrogram len is bigger then label len')
             if MFCCvar.shape[0] > 1:
                 raise Exception('dual channel, skipping audio file %s'%file_path)
-            if MFCCvar.shape[2] > 1650:
+            if MFCCvar.shape[2] > 3000:
                 raise Exception(str(idx) + '-index spectrogram to big. size %s'%MFCCvar.shape[2])
             if label_len == 0:
                 raise Exception('label len is zero... skipping %s')
@@ -90,8 +90,39 @@ class Data(torch.utils.data.Dataset):
         except Exception as e:
             # if self.log_ex:
             print(str(e)) #, file_path
-            # return self.__getitem__(idx - 1 if idx != 0 else idx + 1)  
-            return self.__getitem__(idx + 1 if idx != self.__len__() else workidx) 
+            # 使用循环替代递归，避免递归深度超限
+            next_idx = idx + 1
+            while next_idx < self.__len__():
+                try:
+                    sent = self.data['text'].iloc[next_idx]
+                    label = self.text_process.unicode_to_ascii(sent)
+                    label = self.text_process.text_to_int_sequence(label)
+                    
+                    file_path = self.data.key.iloc[next_idx]
+                    waveform, sample_rate_data = torchaudio.load(file_path)
+                    waveform = torchaudio.functional.resample(waveform = waveform, orig_freq = sample_rate_data, new_freq = self.sample_rate)
+                    MFCCvar = self.audio_transforms(waveform)
+                    
+                    spec_len = MFCCvar.shape[-1] // 2
+                    label_len = len(label)
+                    
+                    if MFCCvar.shape[0] > 1:
+                        raise Exception('dual channel, skipping audio file %s'%file_path)
+                    if MFCCvar.shape[2] > 3000:
+                        raise Exception(str(next_idx) + '-index spectrogram to big. size %s'%MFCCvar.shape[2])
+                    if label_len == 0:
+                        raise Exception('label len is zero... skipping %s')
+                        
+                    return MFCCvar, label, spec_len, label_len
+                except Exception as e2:
+                    print(str(e2))
+                    next_idx += 1
+            
+            # 如果所有后续样本都失败，返回一个空的样本
+            print("警告：无法找到有效样本，返回空样本")
+            return None, [0], 0, 1
+            
+            # return self.__getitem__(idx + 1 if idx != self.__len__() else workidx) 
         return MFCCvar, label, spec_len, label_len
     
     
@@ -110,7 +141,7 @@ def collate_fn_padd(data):
     label_lengths = []
     for (spectrogram, label, input_length, label_length) in data:
         if spectrogram is None:
-            print("help")
+            print("跳过空样本")
             continue
         # print(spectrogram.shape)
         spectrograms.append(spectrogram.squeeze(0).transpose(0, 1))
@@ -118,11 +149,19 @@ def collate_fn_padd(data):
         input_lengths.append(input_length)
         label_lengths.append(label_length)
 
+    # 如果批次中没有有效样本，创建一个小的虚拟样本以避免错误
+    if len(spectrograms) == 0:
+        print("警告：批次中没有有效样本")
+        dummy_spec = torch.zeros(1, 32, 100)
+        dummy_label = torch.Tensor([0])
+        spectrograms = [dummy_spec]
+        labels = [dummy_label]
+        input_lengths = [50]
+        label_lengths = [1]
+
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).unsqueeze(1).transpose(2, 3)
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
-    input_lengths = input_lengths
     # print(spectrograms.shape)
-    label_lengths = label_lengths
     # ## compute mask
     # mask = (batch != 0).cuda(gpu)
     # return batch, lengths, mask

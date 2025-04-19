@@ -1,0 +1,7 @@
+data/LibriSpeech
+data/*.tar.gz
+runs/*
+__pycache__
+DataMFCCbigdata2l2h.txt
+*.lisence
+*.pth

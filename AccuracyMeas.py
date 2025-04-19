@@ -21,7 +21,7 @@ import numpy as np
 
 from Utils.Preprocessing import MFCCfull
 # from Tokenizer import TextProcess
-from Utils.decoder import DecodeGreedy, CTCBeamDecoder
+from Utils.decoder_simple import DecodeGreedy, CTCBeamDecoder
 from Utils.scorer import cer, wer
 
 #device config
